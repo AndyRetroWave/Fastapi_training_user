@@ -1,4 +1,4 @@
-from sqlalchemy import insert
+from sqlalchemy import insert, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.dao.basedao import BaseDao
@@ -38,3 +38,12 @@ class UserDAO(BaseDao):
                 "password": password,
             }
             logger.error(msg, extra=extra)
+
+    @classmethod
+    async def updata_user_data(cls, old_email: str, **kwargs) -> None:
+        async with async_session_maker() as session:
+            query = (
+                update(cls.model).where(cls.model.email == old_email).values(**kwargs)
+            )
+            await session.execute(query)
+            await session.commit()

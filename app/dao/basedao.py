@@ -1,6 +1,6 @@
 from enum import Enum
 
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, insert, select
 
 from app.database import async_session_maker
 from app.user.model import Users
@@ -46,14 +46,6 @@ class BaseDao:
         cls.model = model
         async with async_session_maker() as session:
             query = insert(cls.model).values(**data)
-            await session.execute(query)
-            await session.commit()
-
-    @classmethod
-    async def update_one(cls, model: CollectionModelDao = Users, **data):
-        cls.model = model
-        async with async_session_maker() as session:
-            query = update(cls.model).values(**data)  # noqa: F821
             await session.execute(query)
             await session.commit()
 

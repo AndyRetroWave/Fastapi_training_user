@@ -22,7 +22,7 @@ services:
     build:
       context: .
     env_file:
-      - .env_copy
+      - .env
     networks:
       - training_user_fastapi
     depends_on:

@@ -11,8 +11,10 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5433:5432"
+    networks:
+      - training_user_fastapi
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./databases-backup.sql:/docker-entrypoint-initdb.d/databases-backup.sql
 
   bot-app:
     image: fastapi_training_user
@@ -21,6 +23,8 @@ services:
       context: .
     env_file:
       - .env_copy
+    networks:
+      - training_user_fastapi
     depends_on:
       - db
     command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
@@ -35,8 +39,14 @@ services:
       PGADMIN_DEFAULT_PASSWORD: "admin"
     ports:
       - "5050:80"
+    networks:
+      - training_user_fastapi
     depends_on:
       - db
 
 volumes:
   db_data:
+
+networks:
+  training_user_fastapi:
+    driver: bridge

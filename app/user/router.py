@@ -1,19 +1,33 @@
-from fastapi import APIRouter, Form, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Form, Path, Query
 from pydantic import BaseModel, EmailStr
+from starlette.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED
 
 from app.dao.basedao import BaseDao
 from app.depends.password import check_password, hash_password
 from app.exceptions.user_exceptions import (
     PasswordErrorDataException,
-    UserErrorAdd,
     UserNotFound,
     UserPasswordError,
 )
 from app.user.dao import UserDAO
 from app.user.model import Users
-from app.user.schemas import SUserReturn
+from app.user.schemas import SUserReturn, SUsers
+from app.user.servis import ServiceUser
 
 router = APIRouter(prefix="/auth", tags=["Пользователи и регистрация"])
+
+
+@router.get("/items/{item_id}")
+async def read_items(
+    item_id: Annotated[int, Path(title="The ID of the item to get")],
+    q: Annotated[str | None, Query(alias="item-query")] = None,
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
 
 
 class UserUpdate(BaseModel):
@@ -23,26 +37,11 @@ class UserUpdate(BaseModel):
     password: str
 
 
-@router.post("/register", response_model=SUserReturn)
-async def register_user(
-    first_name: str = Form(),
-    last_name: str = Form(),
-    email: EmailStr = Form(),
-    password: str = Form(),
-) -> SUserReturn:
-    if await BaseDao.find_one_or_none(email=email) is None:
-        password: str = await hash_password(password)
-        if password:
-            await UserDAO.set_user(first_name, last_name, email, password)
-        else:
-            raise PasswordErrorDataException()
-        return SUserReturn(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-        )
-    else:
-        raise UserErrorAdd()
+@router.post("/register")
+async def register_user(user: SUsers):
+    if await ServiceUser.register_user(user=user):
+        return {"message": "User registered successfully"}, HTTP_200_OK
+    return {"message": "Registration failed"}, HTTP_401_UNAUTHORIZED
 
 
 @router.get("/me_info", response_model=SUserReturn)

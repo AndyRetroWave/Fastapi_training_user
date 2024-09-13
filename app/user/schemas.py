@@ -2,12 +2,10 @@ from pydantic import BaseModel, EmailStr
 
 
 class SUsers(BaseModel):
-    id: int
     first_name: str
-    family_nam: str
-    emai: EmailStr
-    hashed_passwor: str
-    is_activ: bool
+    last_name: str
+    email: EmailStr
+    hashed_password: str
 
 
 class SUserReturn(BaseModel):

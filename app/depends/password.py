@@ -5,8 +5,8 @@ import bcrypt
 async def hash_password(password: str) -> str:
     pattern = r'^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?])(?=.{8,})'
     if re.match(pattern, password):
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
+        salt: bytes = bcrypt.gensalt()
+        hashed_password: bytes = bcrypt.hashpw(password.encode("utf-8"), salt)
         return hashed_password.decode("utf-8")
 
 
